@@ -444,11 +444,11 @@
                                     }
 
                                     const assistantMessagePayload = llmResponseData.completion_message;
-                                    // if (!assistantMessagePayload || typeof assistantMessagePayload.content !== 'string') {
-                                    //     console.error('LLM response message content is invalid:', assistantMessagePayload);
-                                    //     alert('Received invalid message content from the LLM.');
-                                    //     return;
-                                    // }
+                                    if (!assistantMessagePayload || typeof assistantMessagePayload.content.text !== 'string') {
+                                        console.error('LLM response message content is invalid:', assistantMessagePayload);
+                                        alert('Received invalid message content from the LLM.');
+                                        return;
+                                    }
                                     // Remove Meta's stop_reason from the message
                                     console.log('Initial assistantMessagePayload:', assistantMessagePayload)
                                     delete assistantMessagePayload.stop_reason;
@@ -457,7 +457,7 @@
                                     const newCmjMessage = {
                                         role: assistantMessagePayload.role || 'assistant',
                                         name: "Thingking Machine",
-                                        content: assistantMessagePayload.content.trim()
+                                        content: assistantMessagePayload.content.text
                                     };
 
                                     // cmjMessages (from the outer scope of the Alt+Shift listener) is updated
