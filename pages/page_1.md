@@ -12,4 +12,3 @@ title: Thingking Machine
 
 [//]: # ({% include lib/action.html %})
 
-
