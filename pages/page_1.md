@@ -2,7 +2,9 @@
 layout: page
 title: Thingking Machine
 ---
+
 # Thingking Machine
+
 {% include lib/utilities.html %}
 <p class="dialogue"><span class="speaker">Theodotos</span>What is justice, my friend?</p>
 <!-- Commented out other examples for brevity -->
