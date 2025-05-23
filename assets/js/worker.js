@@ -52,7 +52,7 @@ self.onmessage = async function(event) {
 
         // --- 4. Prepare the final API payload ---
         const defaultApiParameters = {
-            model: "Llama-4-Maverick-17B-128E-Instruct-FP8",
+            model: "Groq-Llama-4-Maverick-17B-128E-Instruct-FP8",
             max_completion_tokens: 4096,
             temperature: 1,
             top_p: 1,

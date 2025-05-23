@@ -451,8 +451,8 @@
                                     }
                                     // Remove Meta's stop_reason from the message
                                     console.log('Initial assistantMessagePayload:', assistantMessagePayload)
-                                    delete assistantMessagePayload.stop_reason;
-                                    console.log('Final assistantMessagePayload:', assistantMessagePayload)
+                                    // delete assistantMessagePayload.stop_reason;
+                                    // console.log('Final assistantMessagePayload:', assistantMessagePayload)
 
                                     const newCmjMessage = {
                                         role: assistantMessagePayload.role || 'assistant',
