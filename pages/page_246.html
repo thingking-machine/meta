@@ -449,6 +449,8 @@
                                         alert('Received invalid message content from the LLM.');
                                         return;
                                     }
+                                    // Remove Meta's stop_reason from the message
+                                    delete assistantMessagePayload.stop_reason;
 
                                     const newCmjMessage = {
                                         role: assistantMessagePayload.role || 'assistant',
