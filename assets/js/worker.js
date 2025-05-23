@@ -80,7 +80,7 @@ self.onmessage = async function(event) {
             body: JSON.stringify(finalApiPayload)
         };
 
-        console.log('Worker: Making API call to Fireworks AI with payload:', finalApiPayload);
+        console.log('Worker: Making API call Meta API with payload:', finalApiPayload);
         const apiCallResponse = await fetch('https://api.llama.com/v1/chat/completions', apiOptions);
 
         if (!apiCallResponse.ok) {
