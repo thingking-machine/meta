@@ -1,2 +1,1 @@
-# Thingking Machine
-github.io pages
+### Thingking Machine

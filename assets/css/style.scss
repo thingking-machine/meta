@@ -1,0 +1,25 @@
+---
+---
+
+@import "{{ site.theme }}";
+// Styling for Platonic dialogue utterances
+.dialogue {
+  margin-bottom: 1rem; // Matches Primer's spacing scale
+  text-indent: 1rem; // Tab-like indent for dialogue
+  font-size: var(--base-text-size, 16px); // Inherit Primer's base font size
+  line-height: var(--base-line-height, 1.5); // Inherit Primer's line height
+  color: var(--base-color, #24292e); // Inherit Primer's text color
+}
+
+// Styling for the speaker's name
+.dialogue .speaker {
+  font-weight: 550; // Matches Primer's bold weight
+  font-variant: small-caps; /* Use small capitals for speaker names */
+  color: var(--color-text-primary, #24292e); // Primer's primary text color
+
+  // Ensure colon after speaker is visually distinct
+  &::after {
+    content: ": ";
+    margin-right: 0.25rem; // Small spacing after colon
+  }
+}
