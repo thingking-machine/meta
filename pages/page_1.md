@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Thingking Machine
+title: Thingking
 ---
 # Thingking Machine
 {% include lib/utilities.html %}
