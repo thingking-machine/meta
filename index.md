@@ -10,3 +10,5 @@ title: Thingking Machine
 
 [Page 1](./pages/page_1)
 
+[Page 2](./pages/page_2)
+
