@@ -21,7 +21,7 @@ function platoHtmlToCmj(platoHtml) {
     const utterance = p.textContent.replace(speakerSpan.textContent, '').replace(/:\s*/, '').trim();
 
     let role = 'user';
-    if (speaker.toUpperCase() === 'MACHINA RATIOCINATRIX') {
+    if (speaker.toUpperCase() === machineConfig.name) {
       role = 'assistant';
     } else if (speaker.toUpperCase() === 'INSTRUCTIONS') {
       role = 'system';

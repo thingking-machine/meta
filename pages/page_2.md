@@ -4,8 +4,8 @@ title: Configuration
 ---
 <script>
     // Access in any script
-    console.log(machineConfig.machineName); 
+    console.log(machineConfig.name); 
     if (machineConfig.thingking) {
-        console.log('I am thinking', machineConfig.machineName);
+        console.log('I am a thinking', machineConfig.name);
     }
 </script>

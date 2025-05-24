@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 console.log('Alt+Shift: Launching LLM worker with CMJ messages:', userQueryParameters);
-                const llmWorker = new Worker('../assets/js/worker.js');
+                const llmWorker = new Worker(machineConfig.work);
 
                 llmWorker.onmessage = function(e) {
                     console.log('Main thread: Message received from worker:', e.data);
@@ -249,27 +249,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         try {
                             const llmResponseData = e.data.data;
-                            if (!llmResponseData || !llmResponseData.completion_message || llmResponseData.completion_message.length === 0) {
-                                console.error('LLM response is missing completion_message.');
+                            if (!llmResponseData || !llmResponseData.content || llmResponseData.content.text.length === 0) {
+                                console.error('LLM response is missing a message content.');
                                 alert('Received an empty or invalid response from the LLM.');
                                 return;
                             }
 
-                            const assistantMessagePayload = llmResponseData.completion_message;
-                            if (!assistantMessagePayload || typeof assistantMessagePayload.content.text !== 'string') {
-                                console.error('LLM response message content is invalid:', assistantMessagePayload);
-                                alert('Received invalid message content from the LLM.');
-                                return;
-                            }
                             // Remove Meta's stop_reason from the message
-                            console.log('Initial assistantMessagePayload:', assistantMessagePayload)
-                            // delete assistantMessagePayload.stop_reason;
+                            console.log('Initial llmResponseData:', llmResponseData)
+                            // delete llmResponseData.stop_reason;
                             // console.log('Final assistantMessagePayload:', assistantMessagePayload)
 
                             const newCmjMessage = {
-                                role: assistantMessagePayload.role || 'assistant',
-                                name: "Thingking Machine",
-                                content: assistantMessagePayload.content.text
+                                role: llmResponseData.role,
+                                name: machineConfig.name,
+                                content: llmResponseData.content.text
                             };
 
                             // cmjMessages (from the outer scope of the Alt+Shift listener) is updated
