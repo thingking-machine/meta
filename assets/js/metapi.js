@@ -1,12 +1,18 @@
 // worker.js
+let machineConfig = null;
+let messages = null;
 
 self.onmessage = async function(event) {
     // Parameters for the LLM API call from the main thread
-    const incomingUserQueryParameters = event.data;
+    machineConfig = event.data.config;
+    console.log('Worker received machine config:', machineConfig);
+    messages = event.data.messages;
+    console.log('Worker received messages:', messages);
+
 
     try {
-        // --- 1. Fetch the authentication token ---
-        console.log('Worker: Fetching token from https://localhost/');
+        // --- 1. Fetch the token ---
+        console.log('Worker: Fetching the API token from https://localhost/');
         const tokenResponse = await fetch('https://localhost/' + machineConfig.token);
         if (!tokenResponse.ok) {
              throw new Error(`HTTP error fetching token! status: ${tokenResponse.status}`);
@@ -17,7 +23,7 @@ self.onmessage = async function(event) {
         // --- 2. Fetch instruction ---
         let instructionText; // Declare here to ensure it's in scope
         try {
-            console.log('Worker: Fetching instruction from https://localhost');
+            console.log('Worker: Fetching the Machine instruction from https://localhost');
             const instructionResponse = await fetch('https://localhost/' + machineConfig.instruction);
             if (!instructionResponse.ok) {
                  console.log(`Worker: HTTP error fetching instruction! status: ${instructionResponse.status}. Using default instruction.`);
@@ -38,10 +44,10 @@ self.onmessage = async function(event) {
         let messagesForApi;
 
         // Check if the main thread sent any messages
-        if (incomingUserQueryParameters.messages && Array.isArray(incomingUserQueryParameters.messages) && incomingUserQueryParameters.messages.length > 0) {
+        if (messages && Array.isArray(messages) && messages.length > 0) {
             // User provided messages: unshift/prepend the fetched system instruction
-            messagesForApi = [systemInstructionMessage, ...incomingUserQueryParameters.messages];
-            console.log('Messages for API:', messagesForApi)
+            messagesForApi = [systemInstructionMessage, ...messages];
+            console.log('All messages for API:', messagesForApi)
         } else {
             // No messages from user, or an empty array: use the system instruction and a default user prompt
             messagesForApi = [
@@ -52,7 +58,7 @@ self.onmessage = async function(event) {
 
         // --- 4. Prepare the final API payload ---
         const defaultApiParameters = {
-            model: "Groq-Llama-4-Maverick-17B-128E-Instruct-FP8",
+            model: machineConfig.llm,
             max_completion_tokens: 4096,
             temperature: 1,
             top_p: 1,
@@ -64,10 +70,9 @@ self.onmessage = async function(event) {
         // Merge default parameters, then incoming user parameters (which might override temp, max_tokens, etc.),
         const finalApiPayload = {
             ...defaultApiParameters,
-            ...incomingUserQueryParameters,
             messages: messagesForApi      // Ensure our carefully constructed messages array is used
         };
-        console.log('Worker: Final API payload:', finalApiPayload);
+        console.log('Worker: Here is the final API payload:', finalApiPayload);
 
 
         // --- 5. Make the LLM API call ---
@@ -98,7 +103,7 @@ self.onmessage = async function(event) {
         const apiData = await apiCallResponse.json();
         console.log('Worker: API call successful, response:', apiData);
 
-        const msgResponse = apiData.completion_message  // meta's responce text in its content.text
+        const msgResponse = apiData.completion_message  // meta's response text in its content.text of it
 
         // Send the successful result back to the main thread
         self.postMessage({ type: 'success', data: msgResponse });

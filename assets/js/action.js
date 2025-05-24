@@ -236,6 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cmjMessages = platoHtmlToCmj(htmlContent); // platoHtmlToCmj is global
 
                 const userQueryParameters = {
+                    config: window.machineConfig,
                     messages: cmjMessages
                 };
 
