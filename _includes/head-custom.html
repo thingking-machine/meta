@@ -2,7 +2,7 @@
         window.machineConfig = {
             name: 'Thingking Machine',
             instruction: 'thingking.txt',
-            work: '/assets/js/metapi.js',
+            work: "{{ '/assets/js/metapi.js' | relative_url }}",
             token: 'meta.txt',
             apiUrl: 'https://api.llama.com/v1/chat/completions',
             llm: 'Llama-4-Maverick-17B-128E-Instruct-FP8'
