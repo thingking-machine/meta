@@ -4,9 +4,8 @@ title: Thingking Machine
 ---
 # Thingking Machine
 
-<pre>
-  A machine is a <b>thing</b>. Things can not <b>think</b>. ...but some of them can <b>thingk</b>!
-</pre>
+<br>
+Go directly to the [Dialogue Page](/meta/machine) or change an submit the settings.
+<br><br>
 
-[Thingking Machine (meta)](./pages/machine)
-
+{% include parameter-form.html %}

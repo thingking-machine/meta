@@ -1,11 +1,13 @@
 // worker.js
 let machineConfig = null;
 let messages = null;
+let llmSettings = null;
 
 self.onmessage = async function(event) {
     // Parameters for the LLM API call from the main thread
     machineConfig = event.data.config;
     console.log('Worker received machine config:', machineConfig);
+    llmSettings = event.data.settings;
     messages = event.data.messages;
     console.log('Worker received messages:', messages);
 
@@ -58,10 +60,11 @@ self.onmessage = async function(event) {
 
         // --- 4. Prepare the final API payload ---
         const defaultApiParameters = {
-            model: machineConfig.llm,
-            max_completion_tokens: 4096,
-            temperature: 1,
-            top_p: 1,
+            model: llmSettings.model || machineConfig.llm,
+            max_completion_tokens: llmSettings.max_completion_tokens || 4096,
+            temperature: llmSettings.temperature || 1.0,
+            repetition_penalty: llmSettings.repetition_penalty || 1.0,
+            top_p: llmSettings.top_p || 0.9,
             top_k: 50,
             response_format: {"type":"text"},
             stream: false

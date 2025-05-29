@@ -1,33 +1,5 @@
+
 document.addEventListener('DOMContentLoaded', () => {
-    const llmSettings = {};
-    const queryParams = new URLSearchParams(window.location.search);
-
-    // Iterate over all query parameters found in the URL
-    for (const [key, value] of queryParams.entries()) {
-        // Basic type conversion for known numeric fields
-        if (key === 'temperature') {
-          const numValue = parseFloat(value);
-          llmSettings[key] = isNaN(numValue) ? value : numValue;
-        } else if (key === 'max_completion_tokens') {
-            const numValue = parseInt(value, 10);
-            llmSettings[key] = isNaN(numValue) ? value : numValue;
-        } else if (key ==='repetition_penalty') {
-            const numValue = parseFloat(value);
-            llmSettings[key] = isNaN(numValue) ? value : numValue;
-        } else if (key === 'top_p') {
-          const numValue = parseFloat(value);
-          llmSettings[key] = isNaN(numValue) ? value : numValue;
-        } else if (key === 'top_k') {
-          const numValue = parseFloat(value);
-          llmSettings[key] = isNaN(numValue) ? value : numValue;
-        } else {
-          llmSettings[key] = value;
-        }
-      }
-    // Make the parameters globally available for other scripts
-    window.llmSettings = llmSettings;
-    console.log('LLM Settings:', window.llmSettings)
-
     // Check whether the page has the container.
     const contentContainer = document.querySelector('.container-md.markdown-body');
     if (!contentContainer) {
@@ -41,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Capture HTML from original static <p class="dialogue"> elements and then hide them.
+    // These elements are not moved, respecting their original structure for other potential uses,
+    // but are hidden to cede display control to the dynamic dialogueWrapper.
     const originalStaticDialogueElements = Array.from(contentContainer.querySelectorAll('p.dialogue'));
     let initialHtmlFromStatic = '';
     originalStaticDialogueElements.forEach(p => {
@@ -51,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Create a wrapper for the dialogue content (will be populated by updateDisplayState)
     const dialogueWrapper = document.createElement('div');
     dialogueWrapper.id = 'dialogue-content-wrapper';
-    dialogueWrapper.style.paddingBottom = '20px'; // Visible end of dialogue text.
 
     // 2. Create the textarea for editing
     const textarea = document.createElement('textarea');
@@ -120,10 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
             dialogueWrapper.style.display = 'block';
             textarea.style.display = 'none';
             filePickerContainer.style.display = 'none';
-
-            // Scroll to the bottom of the dialogue content after it's updated and shown
-            dialogueWrapper.scrollIntoView({ behavior: 'smooth', block: 'end' }); // <<< ADDED THIS LINE
-
         } else {
             // No valid content, show file picker
             dialogueWrapper.style.display = 'none';
@@ -268,7 +237,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const userQueryParameters = {
                     config: window.machineConfig,
-                    settings: window.llmSettings,
                     messages: cmjMessages
                 };
 
@@ -282,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         try {
                             const llmResponseData = e.data.data;
-                            if (!llmResponseData || !llmResponseData.content || llmResponseData.content.length === 0) {
+                            if (!llmResponseData || !llmResponseData.content || llmResponseData.content.text.length === 0) {
                                 console.error('LLM response is missing a message content.');
                                 alert('Received an empty or invalid response from the LLM.');
                                 return;
@@ -296,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const newCmjMessage = {
                                 role: llmResponseData.role,
                                 name: machineConfig.name,
-                                content: llmResponseData.content
+                                content: llmResponseData.content.text
                             };
 
                             // cmjMessages (from the outer scope of the Alt+Shift listener) is updated

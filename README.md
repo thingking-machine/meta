@@ -1,1 +1,1 @@
-### Thingking Machine (Meta)
+### Thingking Machine (meta)
