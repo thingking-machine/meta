@@ -10,4 +10,4 @@ Go directly to the [Dialogue Page](/meta/machine) or change an submit the settin
 
 {% include parameter-form.html %}
 <br><br>
-[Go back to the home page of this Machine](https://thingking-machine.github.io)
+Go back to the [home page](https://thingking-machine.github.io) of this Machine.
