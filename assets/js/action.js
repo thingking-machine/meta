@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-
+    // 10. Click on text
     dialogueWrapper.addEventListener('click', () => {
         try {
             const plainText = localStorage.getItem('multilogue') || '';
@@ -156,25 +156,16 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Could not switch to edit mode due to a content error.");
         }
     });
-
+    // 11. Save to file from edit mode
     textarea.addEventListener('keydown', (event) => {
         if (event.ctrlKey && !event.shiftKey && event.key === 'Enter') {
             event.preventDefault();
             const newText = textarea.value;
             localStorage.setItem('multilogue', newText);
-            // --- SEND TO BROKER on manual save ---
-            sendPlatoTextToBroker(newText);
-            // --- END SEND TO BROKER ---
             updateDisplayState();
         }
     });
-
-    textarea.addEventListener('input', () => {
-        localStorage.setItem('multilogue', textarea.value);
-        // Optionally, you could send to broker on every input, but Ctrl+Enter might be preferred
-        // sendPlatoTextToBroker(textarea.value);
-    });
-
+    // 12. Event listener for Ctrl+Shift+Enter for saving a file
     document.addEventListener('keydown', async (event) => {
         if (event.ctrlKey && event.shiftKey && event.key === 'Enter') {
             event.preventDefault();
@@ -203,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-
+    // 12. Event listener for LLM communications Alt+Shift
     document.addEventListener('keydown', function(event) {
         if (event.altKey && event.shiftKey) {
             event.preventDefault();
@@ -281,23 +272,145 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 13. Event listener for messages received from the broker
-    document.addEventListener('brokerMessageReceived', function(event) {
-        console.log("Page: Received 'brokerMessageReceived' event:", event.detail);
-        if (event.detail && typeof event.detail.payload === 'string') {
-            const receivedPlatoText = event.detail.payload;
-            const messageOrigin = event.detail.origin;
+    // 12. Event listener for Extension communications (Alt+Ctrl)
+    document.addEventListener('keydown', function(event) {
+        if (event.altKey && event.ctrlKey) {
+            event.preventDefault();
 
-            console.log(`Page: Message from broker (origin: ${messageOrigin.url || 'unknown'}), content will be applied.`);
+            const currentDialogueWrapper = document.getElementById('dialogue-content-wrapper');
+            if (!currentDialogueWrapper) {
+                console.error('Alt+Shift: dialogue-content-wrapper not found.');
+                alert('Error: Could not find the dialogue content to send.');
+                return;
+            }
 
-            // Treat as if user edited and saved (Ctrl+Enter equivalent)
-            localStorage.setItem('multilogue', receivedPlatoText);
-            updateDisplayState(); // Update display with the new content
+            const htmlContent = currentDialogueWrapper.innerHTML;
+            if (!htmlContent || htmlContent.trim() === '') {
+                console.log('Alt+Shift: Dialogue content is empty. Nothing to send.');
+                alert('Dialogue is empty. Please add some content first.');
+                return;
+            }
 
-            // Optional: Notify user
-            // alert(`Dialogue updated from another page: ${messageOrigin.title || messageOrigin.url}`);
-        } else {
-            console.warn("Page: 'brokerMessageReceived' event received without string 'event.detail.payload'.", event.detail);
+            console.log('Alt+Shift pressed. Preparing to send dialogue to LLM worker...');
+
+            try {
+                const cmjMessages = platoHtmlToCmj(htmlContent); // platoHtmlToCmj is global
+
+                const userQueryParameters = {
+                    config: window.machineConfig,
+                    messages: cmjMessages
+                };
+
+                console.log('Alt+Shift: Launching LLM worker with CMJ messages:', userQueryParameters);
+                const llmWorker = new Worker(machineConfig.work);
+
+                llmWorker.onmessage = function(e) {
+                    console.log('Main thread: Message received from worker:', e.data);
+                    if (e.data.type === 'success') {
+                        console.log('Worker task successful. LLM Response:', e.data.data);
+
+                        try {
+                            const llmResponseData = e.data.data;
+                            if (!llmResponseData || !llmResponseData.content || llmResponseData.content.text.length === 0) {
+                                console.error('LLM response is missing a message content.');
+                                alert('Received an empty or invalid response from the LLM.');
+                                return;
+                            }
+
+                            // Remove Meta's stop_reason from the message
+                            console.log('Initial llmResponseData:', llmResponseData)
+                            // delete llmResponseData.stop_reason;
+                            // console.log('Final assistantMessagePayload:', assistantMessagePayload)
+
+                            const newCmjMessage = {
+                                role: llmResponseData.role,
+                                name: machineConfig.name,
+                                content: llmResponseData.content.text
+                            };
+
+                            // cmjMessages (from the outer scope of the Alt+Shift listener) is updated
+                            cmjMessages.push(newCmjMessage);
+
+                            // CmjToPlatoText is global
+                            const updatedPlatoText = CmjToPlatoText(cmjMessages);
+                            if (typeof updatedPlatoText !== 'string') {
+                                console.error('Failed to convert updated CMJ to PlatoText.');
+                                alert('Error processing the LLM response for display.');
+                                return;
+                            }
+
+                            localStorage.setItem('multilogue', updatedPlatoText);
+
+                            // updateDisplayState
+                            updateDisplayState();
+                            console.log('Dialogue updated with LLM response.');
+
+                        } catch (processingError) {
+                            console.error('Error processing LLM response:', processingError);
+                            alert('An error occurred while processing the LLM response: ' + processingError.message);
+                        }
+
+                    } else if (e.data.type === 'error') {
+                        console.error('Main thread: Error message from worker:', e.data.error);
+                        alert('Worker reported an error: ' + e.data.error);
+                    }
+                };
+
+                llmWorker.onerror = function(error) {
+                    console.error('Main thread: An error occurred with the worker script:', error.message, error);
+                    alert('Failed to initialize or run worker: ' + error.message);
+                };
+
+                llmWorker.postMessage(userQueryParameters);
+                console.log('Main thread: Worker launched and CMJ messages sent.');
+
+            } catch (e) {
+                console.error('Alt+Shift: Failed to process dialogue or communicate with the worker:', e);
+                alert('Error preparing data for LLM: ' + e.message);
+            }
+        }
+    });
+    // 13. Listen for storage changes to platoText (e.g., from extension)
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'multilogue') {
+            // console.log('Page Script: localStorage.platoText changed, calling updateDisplayState.');
+            // Ensure updateDisplayState is accessible here or call the relevant parts directly
+            if (typeof updateDisplayState === 'function') {
+                updateDisplayState();
+            } else {
+                console.warn('Page Script: updateDisplayState function not found globally for storage event.');
+                // Fallback or direct DOM manipulation if needed, though updateDisplayState is preferred
+                const currentPlatoText = localStorage.getItem('multilogue');
+                if (currentPlatoText && currentPlatoText.trim() !== '') {
+                    try {
+                        dialogueWrapper.innerHTML = platoTextToPlatoHtml(currentPlatoText); // Assumes platoTextToPlatoHtml is global
+                        dialogueWrapper.style.display = 'block';
+                        textarea.style.display = 'none';
+                        filePickerContainer.style.display = 'none';
+                        dialogueWrapper.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                    } catch (e) {
+                        console.error("Page Script (storage listener): Error rendering Plato text to HTML:", e);
+                        dialogueWrapper.innerHTML = "<p class='dialogue-error'>Error loading content.</p>";
+                    }
+                } else {
+                    dialogueWrapper.style.display = 'none';
+                    textarea.style.display = 'none';
+                    filePickerContainer.style.display = 'flex';
+                    dialogueWrapper.innerHTML = '';
+                    textarea.value = '';
+                }
+            }
+        }
+    });
+    // 14. Update display when tab becomes visible again
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            // console.log('Page is now visible, ensuring display is up to date.');
+            if (typeof updateDisplayState === 'function') {
+                updateDisplayState();
+            } else {
+                console.warn('Page Script (visibilitychange): updateDisplayState function not found.');
+            }
         }
     });
 });
