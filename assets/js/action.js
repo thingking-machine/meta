@@ -169,7 +169,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', async (event) => {
         if (event.ctrlKey && event.shiftKey && event.key === 'Enter') {
             event.preventDefault();
-            const textToSave = textarea.value;
+            const textToSave = localStorage.getItem('multilogue') || '';
+
+            if (!textToSave.trim()) {
+                console.log('Ctrl+Shift+Enter: Dialogue content is empty. Nothing to save.');
+                alert('Dialogue is empty. Nothing to save.');
+                return; // Prevent saving an empty file
+            }
+
             try {
                 const fileHandle = await window.showSaveFilePicker({
                     suggestedName: 'dialogue.txt',
