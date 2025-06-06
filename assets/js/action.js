@@ -161,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.ctrlKey && !event.shiftKey && event.key === 'Enter') {
             event.preventDefault();
             const newText = textarea.value;
+            console.log('Changing localStorage multilogue, content script, are you listening?');
             localStorage.setItem('multilogue', newText);
             updateDisplayState();
         }
@@ -279,37 +280,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     // 13. Listen for storage changes to multilogue (e.g., from extension)
-    window.addEventListener('storage', function(event) {
-        if (event.key === 'multilogue') {
-            // console.log('Page Script: localStorage.platoText changed, calling updateDisplayState.');
-            // Ensure updateDisplayState is accessible here or call the relevant parts directly
-            if (typeof updateDisplayState === 'function') {
-                updateDisplayState();
-            } else {
-                console.warn('Page Script: updateDisplayState function not found globally for storage event.');
-                // Fallback or direct DOM manipulation if needed, though updateDisplayState is preferred
-                const currentPlatoText = localStorage.getItem('multilogue');
-                if (currentPlatoText && currentPlatoText.trim() !== '') {
-                    try {
-                        dialogueWrapper.innerHTML = platoTextToPlatoHtml(currentPlatoText); // Assumes platoTextToPlatoHtml is global
-                        dialogueWrapper.style.display = 'block';
-                        textarea.style.display = 'none';
-                        filePickerContainer.style.display = 'none';
-                        dialogueWrapper.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                    } catch (e) {
-                        console.error("Page Script (storage listener): Error rendering Plato text to HTML:", e);
-                        dialogueWrapper.innerHTML = "<p class='dialogue-error'>Error loading content.</p>";
-                    }
-                } else {
-                    dialogueWrapper.style.display = 'none';
-                    textarea.style.display = 'none';
-                    filePickerContainer.style.display = 'flex';
-                    dialogueWrapper.innerHTML = '';
-                    textarea.value = '';
-                }
-            }
-        }
-    });
+    // window.addEventListener('storage', function(event) {
+    //     if (event.key === 'multilogue') {
+    //         // console.log('Page Script: localStorage.platoText changed, calling updateDisplayState.');
+    //         // Ensure updateDisplayState is accessible here or call the relevant parts directly
+    //         if (typeof updateDisplayState === 'function') {
+    //             updateDisplayState();
+    //         } else {
+    //             console.warn('Page Script: updateDisplayState function not found globally for storage event.');
+    //             // Fallback or direct DOM manipulation if needed, though updateDisplayState is preferred
+    //             const currentPlatoText = localStorage.getItem('multilogue');
+    //             if (currentPlatoText && currentPlatoText.trim() !== '') {
+    //                 try {
+    //                     dialogueWrapper.innerHTML = platoTextToPlatoHtml(currentPlatoText); // Assumes platoTextToPlatoHtml is global
+    //                     dialogueWrapper.style.display = 'block';
+    //                     textarea.style.display = 'none';
+    //                     filePickerContainer.style.display = 'none';
+    //                     dialogueWrapper.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    //                 } catch (e) {
+    //                     console.error("Page Script (storage listener): Error rendering Plato text to HTML:", e);
+    //                     dialogueWrapper.innerHTML = "<p class='dialogue-error'>Error loading content.</p>";
+    //                 }
+    //             } else {
+    //                 dialogueWrapper.style.display = 'none';
+    //                 textarea.style.display = 'none';
+    //                 filePickerContainer.style.display = 'flex';
+    //                 dialogueWrapper.innerHTML = '';
+    //                 textarea.value = '';
+    //             }
+    //         }
+    //     }
+    // });
     // 14. Update display when tab becomes visible again
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
