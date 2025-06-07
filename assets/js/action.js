@@ -280,37 +280,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     // 13. Listen for storage changes to multilogue (e.g., from extension)
-    // window.addEventListener('storage', function(event) {
-    //     if (event.key === 'multilogue') {
-    //         // console.log('Page Script: localStorage.platoText changed, calling updateDisplayState.');
-    //         // Ensure updateDisplayState is accessible here or call the relevant parts directly
-    //         if (typeof updateDisplayState === 'function') {
-    //             updateDisplayState();
-    //         } else {
-    //             console.warn('Page Script: updateDisplayState function not found globally for storage event.');
-    //             // Fallback or direct DOM manipulation if needed, though updateDisplayState is preferred
-    //             const currentPlatoText = localStorage.getItem('multilogue');
-    //             if (currentPlatoText && currentPlatoText.trim() !== '') {
-    //                 try {
-    //                     dialogueWrapper.innerHTML = platoTextToPlatoHtml(currentPlatoText); // Assumes platoTextToPlatoHtml is global
-    //                     dialogueWrapper.style.display = 'block';
-    //                     textarea.style.display = 'none';
-    //                     filePickerContainer.style.display = 'none';
-    //                     dialogueWrapper.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    //                 } catch (e) {
-    //                     console.error("Page Script (storage listener): Error rendering Plato text to HTML:", e);
-    //                     dialogueWrapper.innerHTML = "<p class='dialogue-error'>Error loading content.</p>";
-    //                 }
-    //             } else {
-    //                 dialogueWrapper.style.display = 'none';
-    //                 textarea.style.display = 'none';
-    //                 filePickerContainer.style.display = 'flex';
-    //                 dialogueWrapper.innerHTML = '';
-    //                 textarea.value = '';
-    //             }
-    //         }
-    //     }
-    // });
+    window.addEventListener('storage', function(event) {
+        // This event fires in the current page when localStorage is changed by another
+        // document context (e.g., the content script in the same tab, or another tab).
+        if (event.key === 'multilogue') {
+            console.log('Page Script: "multilogue" changed in localStorage. Updating display.');
+            // The updateDisplayState function is already defined in your DOMContentLoaded scope
+            // and reads from localStorage, so calling it will refresh the UI.
+            updateDisplayState();
+        }
+    });
     // 14. Update display when tab becomes visible again
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
