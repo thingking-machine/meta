@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (platoTextForInit === null) {
         if (initialHtmlFromStatic.trim() !== '') {
             try {
-                platoTextForInit = platoHtmlToPlatoText(initialHtmlFromStatic); // Ensure platoHtmlToPlatoText is globally available
+                platoTextForInit = platoHtmlToPlatoText(initialHtmlFromStatic);
             } catch (e) {
                 console.error("Error converting initial static HTML to Plato text:", e);
                 platoTextForInit = '';
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentPlatoText = localStorage.getItem('multilogue');
         if (currentPlatoText && currentPlatoText.trim() !== '') {
             try {
-                dialogueWrapper.innerHTML = platoTextToPlatoHtml(currentPlatoText); // Ensure platoTextToPlatoHtml is globally available
+                dialogueWrapper.innerHTML = platoTextToPlatoHtml(currentPlatoText);
             } catch (e) {
                 console.error("Error rendering Plato text to HTML:", e);
                 dialogueWrapper.innerHTML = "<p class='dialogue-error'>Error loading content. Please try editing or loading a new file.</p>";
@@ -134,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
             filePickerContainer.style.display = 'none';
             textarea.style.display = 'block';
             textarea.focus();
-            // updateDisplayState(); // Or call this if not going directly to editor
         } catch (err) {
             if (err.name !== 'AbortError') {
                 console.error('Error opening file:', err);
@@ -161,7 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.ctrlKey && !event.shiftKey && event.key === 'Enter') {
             event.preventDefault();
             const newText = textarea.value;
-            console.log('Changing localStorage multilogue, content script, are you listening?');
             localStorage.setItem('multilogue', newText);
             updateDisplayState();
         }
@@ -180,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const fileHandle = await window.showSaveFilePicker({
-                    suggestedName: 'dialogue.txt',
+                    suggestedName: 'multilogue.txt',
                     types: [{
                         description: 'Text Files',
                         accept: { 'text/plain': ['.txt', '.md', '.text', '.plato'] },
@@ -191,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await writable.close();
                 localStorage.setItem('multilogue', textToSave);
                 // --- SEND TO BROKER on file save ---
-                sendPlatoTextToBroker(textToSave);
+                // sendPlatoTextToBroker(textToSave);
                 // --- END SEND TO BROKER ---
                 updateDisplayState();
             } catch (err) {
@@ -221,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const cmjMessages = platoHtmlToCmj(htmlContent); // Ensure platoHtmlToCmj is global
                 const userQueryParameters = {
-                    config: window.machineConfig, // Ensure window.machineConfig is set
+                    config: window.machineConfig,
                     settings: window.llmSettings,
                     messages: cmjMessages
                 };
@@ -243,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 content: llmResponseData.content.text
                             };
                             cmjMessages.push(newCmjMessage);
-                            const updatedPlatoText = CmjToPlatoText(cmjMessages); // Ensure CmjToPlatoText is global
+                            const updatedPlatoText = CmjToPlatoText(cmjMessages);
                             if (typeof updatedPlatoText !== 'string') {
                                 console.error('Failed to convert updated CMJ to PlatoText.');
                                 alert('Error processing the LLM response for display.');
@@ -253,11 +251,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             localStorage.setItem('multilogue', updatedPlatoText);
 
                             // --- SEND TO BROKER after LLM response ---
-                            sendPlatoTextToBroker(updatedPlatoText);
+                            // sendPlatoTextToBroker(updatedPlatoText);
                             // --- END SEND TO BROKER ---
 
                             updateDisplayState();
-                            console.log('Dialogue updated with LLM response and sent to broker.');
 
                         } catch (processingError) {
                             console.error('Error processing LLM response:', processingError);
@@ -273,6 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert('Failed to initialize or run worker: ' + error.message);
                 };
                 llmWorker.postMessage(userQueryParameters);
+
             } catch (e) {
                 console.error('Alt+Shift: Failed to process dialogue or communicate with the worker:', e);
                 alert('Error preparing data for LLM: ' + e.message);
@@ -285,20 +283,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // document context (e.g., the content script in the same tab, or another tab).
         if (event.key === 'multilogue') {
             console.log('Page Script: "multilogue" changed in localStorage. Updating display.');
-            // The updateDisplayState function is already defined in your DOMContentLoaded scope
-            // and reads from localStorage, so calling it will refresh the UI.
             updateDisplayState();
         }
     });
     // 14. Update display when tab becomes visible again
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-            // console.log('Page is now visible, ensuring display is up to date.');
-            if (typeof updateDisplayState === 'function') {
-                updateDisplayState();
-            } else {
-                console.warn('Page Script (visibilitychange): updateDisplayState function not found.');
-            }
+            updateDisplayState();
         }
     });
 });
