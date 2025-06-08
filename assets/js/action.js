@@ -38,6 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dialogueWrapper.style.paddingBottom = '20px';
 
     const textarea = document.createElement('textarea');
+    textarea.id = 'editor';
+    textarea.name = 'editor-textarea';
     textarea.className = 'form-control';
     textarea.style.width = '100%';
     textarea.style.minHeight = '830px';
