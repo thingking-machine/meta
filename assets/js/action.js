@@ -3,29 +3,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const queryParams = new URLSearchParams(window.location.search);
 
     for (const [key, value] of queryParams.entries()) {
+        // Parse floats.
         if (['temperature', 'repetition_penalty', 'top_p', 'top_k'].includes(key)) {
-          const numValue = parseFloat(value);
-          llmSettings[key] = isNaN(numValue) ? value : numValue;
+            const numValue = parseFloat(value);
+            llmSettings[key] = isNaN(numValue) ? value : numValue;
+        // Parse integers.
         } else if (key === 'max_completion_tokens') {
             const numValue = parseInt(value, 10);
             llmSettings[key] = isNaN(numValue) ? value : numValue;
+        // Just assign text values.
         } else {
-          llmSettings[key] = value;
+            llmSettings[key] = value;
         }
       }
+    // Make the parameters globally available (but the worker will not see them).
     window.llmSettings = llmSettings;
     console.log('LLM Settings:', window.llmSettings)
 
     const contentContainer = document.querySelector('.container-md.markdown-body');
-    if (!contentContainer) {
-        console.error('Main content container (.container-md.markdown-body) not found.');
-        return;
-    }
     const h1Element = contentContainer.querySelector('h1');
-    if (!h1Element) {
-        console.error('H1 element not found. UI elements might be misplaced.');
-    }
-
     const originalStaticDialogueElements = Array.from(contentContainer.querySelectorAll('p.dialogue'));
     let initialHtmlFromStatic = '';
     originalStaticDialogueElements.forEach(p => {
@@ -33,44 +29,50 @@ document.addEventListener('DOMContentLoaded', () => {
         p.style.display = 'none';
     });
 
+    // 1. Create a wrapper for the dialogue content (will be populated by updateDisplayState)
     const dialogueWrapper = document.createElement('div');
     dialogueWrapper.id = 'dialogue-content-wrapper';
-    dialogueWrapper.style.paddingBottom = '20px';
+    dialogueWrapper.style.paddingBottom = '20px'; // Visible end of dialogue text.
 
+    // 2. Create the textarea for editing
     const textarea = document.createElement('textarea');
     textarea.id = 'editor';
     textarea.name = 'editor-textarea';
     textarea.className = 'form-control';
     textarea.style.width = '100%';
     textarea.style.minHeight = '830px';
-    textarea.style.display = 'none';
+    textarea.style.display = 'none'; // Initially hidden
     textarea.style.setProperty('border', '1px solid lightgrey', 'important');
     textarea.style.padding = '10px';
 
+    // 3. Create container and button for file picking
     const filePickerContainer = document.createElement('div');
     filePickerContainer.id = 'file-picker-container';
     filePickerContainer.style.width = '100%';
-    filePickerContainer.style.minHeight = '830px';
+    filePickerContainer.style.minHeight = '830px'; // Match textarea height
     filePickerContainer.style.display = 'flex';
     filePickerContainer.style.justifyContent = 'center';
     filePickerContainer.style.alignItems = 'center';
     filePickerContainer.style.padding = '20px';
-    filePickerContainer.style.display = 'none';
+    filePickerContainer.style.display = 'none'; // Initially hidden, updateDisplayState will show it
 
     const chooseFileButton = document.createElement('button');
     chooseFileButton.id = 'chooseFileButton';
-    chooseFileButton.className = 'btn btn-primary';
+    chooseFileButton.className = 'btn btn-primary'; // GitHub Primer style
     chooseFileButton.textContent = 'Choose File to Load Dialogue';
-    chooseFileButton.style.padding = '10px 20px';
+    chooseFileButton.style.padding = '10px 20px'; // Make button larger
     chooseFileButton.style.fontSize = '1.0rem';
     filePickerContainer.appendChild(chooseFileButton);
 
+    // 4. Insert dynamic elements into the DOM (after H1 or fallback)
     if (h1Element) {
         h1Element.after(dialogueWrapper, textarea, filePickerContainer);
     } else {
         contentContainer.prepend(dialogueWrapper, textarea, filePickerContainer);
     }
 
+    // 5. Initialize localStorage:
+    // Use existing 'multilogue'. Otherwise, try to populate from static HTML.
     let platoTextForInit = localStorage.getItem('multilogue');
     if (platoTextForInit === null) {
         if (initialHtmlFromStatic.trim() !== '') {
