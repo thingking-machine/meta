@@ -55,9 +55,6 @@ class MachineApp {
       workerUrl: this.configElement.dataset.workerUrl,
     };
     
-    // Fireworks-specific model name adjustment
-    this.settings.llm.model = `accounts/fireworks/models/${this.settings.llm.model}`;
-    
     console.log('Machina settings loaded:', this.settings.machine);
     console.log('LLM settings loaded:', this.settings.llm);
     
@@ -71,10 +68,10 @@ class MachineApp {
   _applyQueryParameters() {
     const queryParams = new URLSearchParams(window.location.search);
     for (const [key, value] of queryParams.entries()) {
-      if (['temperature', 'top_p'].includes(key)) {
+      if (['temperature', 'repetition_penalty', 'top_p'].includes(key)) {
         const numValue = parseFloat(value);
         this.settings.llm[key] = isNaN(numValue) ? value : numValue;
-      } else if (['max_tokens', 'prompt_truncate_len', 'top_k'].includes(key)) {
+      } else if (['max_completion_tokens', 'top_k'].includes(key)) {
         const numValue = parseInt(value, 10);
         this.settings.llm[key] = isNaN(numValue) ? value : numValue;
       } else if (key === 'model') {

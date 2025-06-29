@@ -16,12 +16,12 @@ self.onmessage = async function(event) {
         // --- 2. Fetch instruction ---
         let instructionText; // Declare here to ensure it's in scope
         try {
-            console.log(`Worker: Fetching the Machine instruction from ${machineConfig.server}`);
-            const instructionResponse = await fetch(machineConfig.server + '/' + machineConfig.instructions_file, {mode: "cors"});
+            console.log('Worker: Fetching the Machine instruction from https://localhost');
+            const instructionResponse = await fetch('https://localhost/' + machineConfig.instruction);
             if (!instructionResponse.ok) {
-                console.log(`Worker: HTTP error fetching instruction! status: ${instructionResponse.status}. Using default instruction.`);
-                // Default instruction if fetching fails or file not found
-                instructionText = "You are a helpful assistant.";
+                 console.log(`Worker: HTTP error fetching instruction! status: ${instructionResponse.status}. Using default instruction.`);
+                 // Default instruction if fetching fails or file not found
+                 instructionText = "You are a helpful assistant.";
             } else {
                 instructionText = (await instructionResponse.text()).trim();
                 console.log('Worker: Instruction fetched successfully.');
@@ -73,7 +73,7 @@ self.onmessage = async function(event) {
         const apiOptions = {
             method: 'POST',
             headers: {
-                'Authorization': 'Bearer ' + llmSettings.token,
+                'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(finalApiPayload)
