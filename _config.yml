@@ -19,7 +19,7 @@ machine:
   apiUrl: https://api.llama.com/v1/chat/completions
 
 app:
-  worker_name: fireapi.js
+  worker_name: metapi.js
 
 lm:
   model: Llama-4-Maverick-17B-128E-Instruct-FP8
