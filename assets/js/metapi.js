@@ -3,7 +3,6 @@ let machineConfig = null;
 let messages = null;
 let llmSettings = null;
 
-
 self.onmessage = async function(event) {
     // Parameters for the LLM API call from the main thread
     machineConfig = event.data.config;
@@ -18,7 +17,7 @@ self.onmessage = async function(event) {
         let instructionText; // Declare here to ensure it's in scope
         try {
             console.log('Worker: Fetching the Machine instruction from https://localhost');
-            const instructionResponse = await fetch('https://localhost/' + machineConfig.instructions_file);
+            const instructionResponse = await fetch('https://localhost/' + machineConfig.instruction);
             if (!instructionResponse.ok) {
                  console.log(`Worker: HTTP error fetching instruction! status: ${instructionResponse.status}. Using default instruction.`);
                  // Default instruction if fetching fails or file not found
@@ -53,20 +52,13 @@ self.onmessage = async function(event) {
         // --- 4. Prepare the final API payload ---
         const defaultApiParameters = {
             model: llmSettings.model || machineConfig.llm,
-            max_tokens: llmSettings.max_tokens || 4096,
-            prompt_truncate_len: llmSettings.prompt_truncate_len || 10000,
-            temperature: llmSettings.temperature || 1,
+            max_completion_tokens: llmSettings.max_completion_tokens || 8192,
+            temperature: llmSettings.temperature || 1.0,
+            repetition_penalty: llmSettings.repetition_penalty || 1.0,
             top_p: llmSettings.top_p || 0.9,
-            top_k: llmSettings.top_k || 50,
-            frequency_penalty: 0,
-            presence_penalty: 0,
-            repetition_penalty: 1,
-            n: 1,
-            ignore_eos: false,
-            stop: "stop",
+            top_k: 50,
             response_format: {"type":"text"},
-            stream: false,
-            context_length_exceeded_behavior: "truncate"
+            stream: false
         };
 
         // Merge default parameters, then incoming user parameters (which might override temp, max_tokens, etc.),
@@ -81,13 +73,13 @@ self.onmessage = async function(event) {
         const apiOptions = {
             method: 'POST',
             headers: {
-                'Authorization': 'Bearer ' + llmSettings.token,
+                'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(finalApiPayload)
         };
 
-        console.log('Worker: Making API call to Fireworks API with payload:', finalApiPayload);
+        console.log('Worker: Making API call Meta API with payload:', finalApiPayload);
         const apiCallResponse = await fetch(machineConfig.apiUrl, apiOptions);
 
         if (!apiCallResponse.ok) {
@@ -105,7 +97,7 @@ self.onmessage = async function(event) {
         const apiData = await apiCallResponse.json();
         console.log('Worker: API call successful, response:', apiData);
 
-        const msgResponse = apiData.choices[0].message // meta's response text in its content.text of it
+        const msgResponse = apiData.completion_message  // meta's response text in its content.text of it
 
         // Send the successful result back to the main thread
         self.postMessage({ type: 'success', data: msgResponse });

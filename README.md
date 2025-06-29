@@ -1,1 +1,1 @@
-### webmachine template (fireworks)
+### Thingking Machine (meta)
