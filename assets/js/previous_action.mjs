@@ -146,34 +146,17 @@ class MachineApp {
     const currentPlatoText = localStorage.getItem('multilogue');
     if (currentPlatoText && currentPlatoText.trim() !== '') {
       try {
-        // Attempt to render the text as HTML.
         this.elements.dialogueWrapper.innerHTML = platoTextToPlatoHtml(currentPlatoText);
-        
-        // If successful, show the rendered view.
-        this.elements.dialogueWrapper.style.display = 'block';
-        this.elements.textarea.style.display = 'none';
-        this.elements.filePickerContainer.style.display = 'none';
-        this.elements.dialogueWrapper.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        this.elements.dialogueWrapper.focus({ preventScroll: true });
-        
       } catch (e) {
-        // If rendering fails, the content is likely malformed.
-        console.error("Error rendering Plato text to HTML. Forcing edit mode.", e);
-        
-        // Put the raw text into the editor so the user can fix it.
-        this.elements.textarea.value = currentPlatoText;
-        
-        // Show the editor view.
-        this.elements.dialogueWrapper.style.display = 'none';
-        this.elements.textarea.style.display = 'block';
-        this.elements.filePickerContainer.style.display = 'none';
-        this.elements.textarea.focus();
-        
-        // Alert the user that they've been put into edit mode.
-        alert("The dialogue content could not be displayed and has been opened in the editor for correction.");
+        console.error("Error rendering Plato text to HTML:", e);
+        this.elements.dialogueWrapper.innerHTML = "<p class='dialogue-error'>Error loading content.</p>";
       }
+      this.elements.dialogueWrapper.style.display = 'block';
+      this.elements.textarea.style.display = 'none';
+      this.elements.filePickerContainer.style.display = 'none';
+      this.elements.dialogueWrapper.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      this.elements.dialogueWrapper.focus({ preventScroll: true });
     } else {
-      // No content, show the file picker.
       this.elements.dialogueWrapper.style.display = 'none';
       this.elements.textarea.style.display = 'none';
       this.elements.filePickerContainer.style.display = 'flex';
@@ -192,17 +175,8 @@ class MachineApp {
       });
       const file = await fileHandle.getFile();
       const fileContent = await file.text();
-      
-      // Set the content in localStorage so it's saved.
       localStorage.setItem('multilogue', fileContent);
-      
-      // Replicate the old, more forgiving behavior: go directly to the editor.
-      this.elements.textarea.value = fileContent;
-      this.elements.dialogueWrapper.style.display = 'none';
-      this.elements.filePickerContainer.style.display = 'none';
-      this.elements.textarea.style.display = 'block';
-      this.elements.textarea.focus();
-      
+      this.updateDisplayState();
     } catch (err) {
       if (err.name !== 'AbortError') {
         console.error('Error opening file:', err);
@@ -385,8 +359,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // All the logic is now encapsulated in the MachineApp class.
     // We just need to create a new instance to get everything running.
     new MachineApp(configElement);
-    console.log('MachineApp initialized.');
+    console.log('Machine initialized.');
   } else {
-    console.log('This is not a machine page (machina-config element not found).');
+    console.log('This is not a machine page.');
   }
 });
