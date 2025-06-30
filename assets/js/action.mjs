@@ -74,9 +74,6 @@ class MachineApp {
       } else if (['max_completion_tokens', 'top_k'].includes(key)) {
         const numValue = parseInt(value, 10);
         this.settings.llm[key] = isNaN(numValue) ? value : numValue;
-      } else if (key === 'model') {
-        // Fireworks-specific model name adjustment from query param
-        this.settings.llm[key] = `accounts/fireworks/models/${value}`;
       } else {
         this.settings.llm[key] = value;
       }
