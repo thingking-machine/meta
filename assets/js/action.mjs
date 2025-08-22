@@ -74,6 +74,9 @@ class MachineApp {
       } else if (['max_completion_tokens', 'top_k'].includes(key)) {
         const numValue = parseInt(value, 10);
         this.settings.llm[key] = isNaN(numValue) ? value : numValue;
+      } else if (['instructions_file'].includes(key)) {
+        // Change default Machina instructions file name if received.
+        this.settings.machine['instructions_file'] = value;
       } else {
         this.settings.llm[key] = value;
       }

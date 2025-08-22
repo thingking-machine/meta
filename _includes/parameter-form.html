@@ -24,6 +24,10 @@
       <label for="top_k">top_k:</label>
       <input type="number" id="top_k" name="top_k" value="{{ site.lm.top_k }}" step="1" min="1" max="400">
     </div>
+    <div class="form-row">
+      <label for="instructions_file">instructions_file:</label>
+      <input type="text" id="instructions_file" name="instructions_file" value="{{ site.machine.instructions_file }}">
+    </div>
     <div class="form-button-row">
       <a href="#" id="navigateToMachineLink" class="styled-link-button">Thingk with these settings, Machine.</a>
     </div>
